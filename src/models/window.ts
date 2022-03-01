@@ -38,7 +38,7 @@ export class EngineWindow extends EventEmitter<{
   }
 
   // NOTE: Stupid affine type hack FTW!
-  close(): asserts this is never {
+  close() {
     this.#tabManager.close();
     this.#browserWindow.close();
   }

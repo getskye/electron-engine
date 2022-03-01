@@ -38,7 +38,7 @@ export class EngineTabManager extends EventEmitter<{
   }
 
   // NOTE: Stupid affine type hack FTW!
-  close(): asserts this is never {
+  close() {
     this.#window.off("offsetChanged", this.handleChangeOffset);
   }
 
