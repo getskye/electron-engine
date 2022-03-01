@@ -1,12 +1,8 @@
-// import { BrowserView, Rectangle } from "electron";
-import { Rectangle } from "electron";
 import { EventEmitter } from "tsee";
 import { EngineTab, EngineTabOptions } from "../models/tab";
-import { EngineWindow } from "../models/window";
+import { EngineWindow, Offset } from "../models/window";
 
 export interface EngineTabManagerOptions {
-  //   backgroundColor: string;
-  //   bounds: Rectangle;
   window: EngineWindow;
 }
 
@@ -22,12 +18,36 @@ export class EngineTabManager extends EventEmitter<{
     super();
 
     this.#window = options.window;
+    this.#window.on("offsetChanged", this.handleChangeOffset);
+  }
+
+  private calculateBounds(offset: Offset) {
+    const bounds = this.#window.browserWindow.getBounds();
+
+    return {
+      x: offset.left,
+      y: offset.top,
+      width: bounds.width - offset.right,
+      height: bounds.height - offset.bottom,
+    };
+  }
+
+  private handleChangeOffset(offset: Offset) {
+    const bounds = this.calculateBounds(offset);
+    this.#tabs.forEach((t) => t.browserView.setBounds(bounds));
+  }
+
+  // NOTE: Stupid affine type hack FTW!
+  close(): asserts this is never {
+    this.#window.off("offsetChanged", this.handleChangeOffset);
   }
 
   hasTab(tab: number | EngineTab) {
     return !!(typeof tab === "number"
       ? this.#tabs[tab]
-      : this.#tabs.find((t) => tab.webContents.id === t.webContents.id));
+      : this.#tabs.find(
+          (t) => tab.browserView.webContents.id === t.browserView.webContents.id
+        ));
   }
 
   getTabFromIndex(index: number) {
@@ -45,8 +65,8 @@ export class EngineTabManager extends EventEmitter<{
 
     if (!newActiveTab) throw new Error("Tab not in tab manager");
 
-    this.#window.setBrowserView(newActiveTab);
-    newActiveTab.webContents.focus();
+    this.#window.browserWindow.setBrowserView(newActiveTab.browserView);
+    newActiveTab.browserView.webContents.focus();
 
     this.emit(
       "activeTabChanged",
@@ -56,11 +76,11 @@ export class EngineTabManager extends EventEmitter<{
   }
 
   get activeTab() {
-    const activeView = this.#window.getBrowserView();
+    const activeView = this.#window.browserWindow.getBrowserView();
     if (!activeView) return;
 
     return this.#tabs.find(
-      (t) => activeView.webContents.id === t.webContents.id
+      (t) => activeView.webContents.id === t.browserView.webContents.id
     );
   }
 
@@ -70,15 +90,10 @@ export class EngineTabManager extends EventEmitter<{
     active: boolean = false
   ) {
     const offset = this.#window.offset;
-    const bounds = this.#window.getBounds();
+    const bounds = this.calculateBounds(offset);
     const tab = new EngineTab({
       ...options,
-      bounds: {
-        x: offset.left,
-        y: offset.top,
-        width: bounds.width - offset.right,
-        height: bounds.height - offset.bottom,
-      },
+      bounds,
     });
 
     if (at) {
@@ -106,14 +121,15 @@ export class EngineTabManager extends EventEmitter<{
     if (this.activeTab === resolvedTab) {
       const nextActiveTab = this.#tabs[index - 1] || this.#tabs[index + 1];
       if (!nextActiveTab) {
-        this.#window.removeBrowserView(resolvedTab);
-        // TODO: This is awkward... we don't have another tab
-        // Maybe tell the window to kill itsself
+        this.#window.browserWindow.removeBrowserView(resolvedTab.browserView);
+        this.#window.close();
       }
 
       this.setActiveTab(nextActiveTab);
     }
 
-    // TODO: I don't see a way to manually destroy the webcontents, maybe it's destroyed on GC?
+    // NOTE: I don't see a way to manually destroy the webcontents, maybe it's destroyed on GC?
   }
 }
+
+// const owo: EngineTabManager = new EngineTabManager({ window: 1 as any });

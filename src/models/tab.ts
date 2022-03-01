@@ -9,26 +9,31 @@ export interface EngineTabOptions extends BrowserViewConstructorOptions {
   bounds: Rectangle;
 }
 
-export class EngineTab extends BrowserView {
+export class EngineTab {
+  #browserView: BrowserView;
   #backgroundColor: string;
 
   constructor(options: EngineTabOptions) {
-    super(options);
     this.#backgroundColor = options.backgroundColor;
-    this.setBackgroundColor(this.#backgroundColor);
-    this.setBounds(options.bounds);
+    this.#browserView = new BrowserView(options);
+    this.#browserView.setBackgroundColor(this.#backgroundColor);
+    this.#browserView.setBounds(options.bounds);
   }
 
   public set backgroundColor(color: string) {
-    this.setBackgroundColor(color);
+    this.#browserView.setBackgroundColor(color);
     this.#backgroundColor = color;
   }
 
   public set bounds(bounds: Rectangle) {
-    this.setBounds(bounds);
+    this.#browserView.setBounds(bounds);
   }
 
   public get bounds() {
-    return this.getBounds();
+    return this.#browserView.getBounds();
+  }
+
+  public get browserView() {
+    return this.#browserView;
   }
 }
