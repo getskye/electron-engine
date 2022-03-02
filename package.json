@@ -12,7 +12,7 @@
     "url": "git+https://github.com/getskye/engine.git"
   },
   "author": "Innatical LLC",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/getskye/engine/issues"
   },
