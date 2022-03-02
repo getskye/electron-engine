@@ -13,11 +13,14 @@ export class EngineWindowManager extends EventEmitter<{
     | ((e: Electron.Event, window: EngineWindow) => void) = null;
   #windowCloseHandlerMap: Record<string, (event: Electron.Event) => void> = {};
 
-  private handleWindowFocus(_: Electron.Event, window: Electron.BrowserWindow) {
+  private handleWindowFocus = (
+    _: Electron.Event,
+    window: Electron.BrowserWindow
+  ) => {
     const engineWindow = this.windows.find((w) => w.browserWindow === window);
 
     if (engineWindow) this.emit("windowAdded", engineWindow);
-  }
+  };
 
   constructor() {
     super();

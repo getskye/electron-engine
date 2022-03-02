@@ -32,10 +32,10 @@ export class EngineTabManager extends EventEmitter<{
     };
   }
 
-  private handleChangeOffset(offset: Offset) {
+  private handleChangeOffset = (offset: Offset) => {
     const bounds = this.calculateBounds(offset);
     this.#tabs.forEach((t) => t.browserView.setBounds(bounds));
-  }
+  };
 
   // NOTE: Stupid affine type hack FTW!
   close() {
