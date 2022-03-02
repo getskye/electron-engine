@@ -17,6 +17,12 @@ export class EngineTab {
     this.#backgroundColor = options.backgroundColor;
     this.#browserView = new BrowserView(options);
     this.#browserView.setBackgroundColor(this.#backgroundColor);
+    this.#browserView.setAutoResize({
+      width: true,
+      height: true,
+      horizontal: false,
+      vertical: false,
+    });
     this.#browserView.setBounds(options.bounds);
   }
 
