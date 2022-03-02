@@ -48,6 +48,8 @@ export class EngineWindowManager extends EventEmitter<{
     window.browserWindow.on("close", handler);
 
     this.emit("windowAdded", window);
+
+    return window;
   }
 
   destroyWindow(window: EngineWindow) {
