@@ -12,6 +12,7 @@ export class EngineWindowManager extends EventEmitter<{
     | null
     | ((e: Electron.Event, window: EngineWindow) => void) = null;
   #windowCloseHandlerMap: Record<string, (event: Electron.Event) => void> = {};
+  #focusHandler: () => void;
 
   private handleWindowFocus = (
     _: Electron.Event,
@@ -24,11 +25,12 @@ export class EngineWindowManager extends EventEmitter<{
 
   constructor() {
     super();
-    app.on("browser-window-focus", this.handleWindowFocus);
+    this.#focusHandler = () => this.handleWindowFocus;
+    app.on("browser-window-focus", this.#focusHandler);
   }
 
   close() {
-    app.off("browser-window-focus", this.handleWindowFocus);
+    app.off("browser-window-focus", this.#focusHandler);
     this.#windows.forEach((w) => {
       delete this.#windowCloseHandlerMap[w.browserWindow.id];
       w.close();

@@ -13,12 +13,15 @@ export class EngineTabManager extends EventEmitter<{
 }> {
   #tabs: EngineTab[] = [];
   #window: EngineWindow;
+  #changeOffsetHandler: (offset: Offset) => void;
 
   constructor(options: EngineTabManagerOptions) {
     super();
 
     this.#window = options.window;
-    this.#window.on("offsetChanged", this.handleChangeOffset);
+    this.#changeOffsetHandler = (offset: Offset) =>
+      this.handleChangeOffset(offset);
+    this.#window.on("offsetChanged", this.#changeOffsetHandler);
   }
 
   private calculateBounds(offset: Offset) {
@@ -39,7 +42,7 @@ export class EngineTabManager extends EventEmitter<{
 
   // NOTE: Stupid affine type hack FTW!
   close() {
-    this.#window.off("offsetChanged", this.handleChangeOffset);
+    this.#window.off("offsetChanged", this.#changeOffsetHandler);
   }
 
   hasTab(tab: number | EngineTab) {
