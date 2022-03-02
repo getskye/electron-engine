@@ -85,9 +85,11 @@ export class EngineTabManager extends EventEmitter<{
   }
 
   createTab(
-    options: Omit<EngineTabOptions, "bounds">,
-    at?: number,
-    active: boolean = false
+    options: Omit<EngineTabOptions, "bounds"> & {
+      at?: number;
+      active: boolean;
+      webpage: { file: string } | { url: string };
+    }
   ) {
     const offset = this.#window.offset;
     const bounds = this.calculateBounds(offset);
@@ -96,17 +98,24 @@ export class EngineTabManager extends EventEmitter<{
       bounds,
     });
 
-    if (at) {
-      this.#tabs.splice(at, 0, tab);
+    if ("file" in options.webpage)
+      tab.browserView.webContents.loadFile(options.webpage.file);
+    else tab.browserView.webContents.loadURL(options.webpage.url);
+
+    if (options.at) {
+      this.#tabs.splice(options.at, 0, tab);
     } else {
       this.#tabs.push(tab);
     }
 
-    const index = at || this.#tabs.length - 1;
+    const index = options.at || this.#tabs.length - 1;
     this.emit("tabAdded", tab, index);
-    if (active) this.setActiveTab(index);
+    if (options.active) this.setActiveTab(index);
 
-    return index;
+    return {
+      index,
+      tab,
+    };
   }
 
   removeTab(tab: number | EngineTab) {
