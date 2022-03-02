@@ -64,7 +64,7 @@ export class EngineWindowManager extends EventEmitter<{
   }
 
   get windows() {
-    return Array.from(this.#windows.values());
+    return [...this.#windows.values()];
   }
 
   get amount() {
