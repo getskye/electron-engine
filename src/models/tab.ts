@@ -23,7 +23,9 @@ export class EngineTab {
       horizontal: false,
       vertical: false,
     });
-    this.#browserView.setBounds(options.bounds);
+    this.#browserView.webContents.on("did-finish-load", () =>
+      this.#browserView.setBounds(options.bounds)
+    );
   }
 
   public set backgroundColor(color: string) {
