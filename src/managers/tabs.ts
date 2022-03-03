@@ -26,12 +26,11 @@ export class EngineTabManager extends EventEmitter<{
 
   private calculateBounds(offset: Offset) {
     const bounds = this.#window.browserWindow.getBounds();
-
     return {
       x: offset.left,
       y: offset.top,
       width: bounds.width - offset.right,
-      height: bounds.height - offset.bottom,
+      height: bounds.height - offset.top - offset.bottom,
     };
   }
 
