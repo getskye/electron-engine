@@ -25,7 +25,6 @@ export class EngineTab extends EventEmitter<{
   #browserView: BrowserView;
   #backgroundColor: string;
   #finishLoadHandler: () => void;
-  #didStartNavigationHandler: () => void;
   #pageTitleUpdatedHandler: (event: Electron.Event, title: string) => void;
   #didChangeThemeColorHandler: (
     event: Electron.Event,
@@ -50,15 +49,9 @@ export class EngineTab extends EventEmitter<{
       this.#browserView.setBounds(options.bounds)
     );
 
-    this.#didStartNavigationHandler = () => {
-      this.#title = undefined;
-      this.#color = undefined;
-
-      this.emit("titleChanged", undefined);
-      this.emit("themeColorChange", undefined);
-    };
-
     this.#finishLoadHandler = () => {
+      this.#title = this.browserView.webContents.getTitle();
+      this.emit("titleChanged", this.#title);
       this.emit("finishLoad");
     };
 
@@ -95,10 +88,6 @@ export class EngineTab extends EventEmitter<{
       this.#didChangeThemeColorHandler
     );
     this.#browserView.webContents.on(
-      "did-start-navigation",
-      this.#didStartNavigationHandler
-    );
-    this.#browserView.webContents.on(
       "did-start-loading",
       this.#loadStartHandler
     );
@@ -124,10 +113,6 @@ export class EngineTab extends EventEmitter<{
     this.#browserView.webContents.off(
       "did-change-theme-color",
       this.#didChangeThemeColorHandler
-    );
-    this.#browserView.webContents.off(
-      "did-start-navigation",
-      this.#didStartNavigationHandler
     );
     this.#browserView.webContents.off(
       "did-start-loading",
