@@ -78,7 +78,9 @@ export class EngineTabManager extends EventEmitter<{
 
     if (!newActiveTab) throw new Error("Tab not in tab manager");
 
-    this.#window.browserWindow.setBrowserView(newActiveTab.browserView);
+    if (this.activeTab?.browserView)
+      this.#window.browserWindow.removeBrowserView(this.activeTab?.browserView);
+    this.#window.browserWindow.addBrowserView(newActiveTab.browserView);
     newActiveTab.browserView.setBounds(
       this.calculateBounds(this.#window.offset)
     );
@@ -92,11 +94,13 @@ export class EngineTabManager extends EventEmitter<{
   }
 
   get activeTab() {
-    const activeView = this.#window.browserWindow.getBrowserView();
-    if (!activeView) return;
+    const activeViews = this.#window.browserWindow.getBrowserViews();
+    if (activeViews.length === 0) return;
 
-    return this.#tabs.find(
-      (t) => activeView.webContents.id === t.browserView.webContents.id
+    const activeIDs = activeViews.map((view) => view.webContents.id);
+
+    return this.#tabs.find((t) =>
+      activeIDs.includes(t.browserView.webContents.id)
     );
   }
 
