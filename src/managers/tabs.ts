@@ -29,7 +29,7 @@ export class EngineTabManager extends EventEmitter<{
     return {
       x: offset.left,
       y: offset.top,
-      width: bounds.width - offset.right,
+      width: bounds.width - offset.left - offset.right,
       height: bounds.height - offset.top - offset.bottom,
     };
   }
@@ -44,9 +44,9 @@ export class EngineTabManager extends EventEmitter<{
     this.#window.off("offsetChanged", this.#changeOffsetHandler);
   }
 
-  hasTab(tab: number | EngineTab) {
-    return !!(typeof tab === "number"
-      ? this.#tabs[tab]
+  hasTab(tab: string | EngineTab) {
+    return !!(typeof tab === "string"
+      ? this.#tabs.find(({ id }) => id === tab)
       : this.#tabs.find(
           (t) => tab.browserView.webContents.id === t.browserView.webContents.id
         ));
@@ -56,14 +56,21 @@ export class EngineTabManager extends EventEmitter<{
     return this.#tabs[index];
   }
 
+  getTabIndex(id: string) {
+    return this.#tabs.findIndex((tab) => tab.id === id);
+  }
+
+  getTab(id: string) {
+    return this.#tabs.find((tab) => tab.id === id);
+  }
+
   get length() {
     return this.#tabs.length;
   }
 
-  setActiveTab(tab: number | EngineTab) {
+  setActiveTab(tab: string | EngineTab) {
     if (!this.hasTab(tab)) throw new Error("Tab not in tab manager");
-    const newActiveTab =
-      typeof tab === "number" ? this.getTabFromIndex(tab) : tab;
+    const newActiveTab = typeof tab === "string" ? this.getTab(tab) : tab;
 
     if (!newActiveTab) throw new Error("Tab not in tab manager");
 
@@ -73,7 +80,7 @@ export class EngineTabManager extends EventEmitter<{
     this.emit(
       "activeTabChanged",
       newActiveTab,
-      typeof tab === "number" ? tab : this.#tabs.indexOf(tab)
+      this.getTabIndex(newActiveTab.id)
     );
   }
 
@@ -112,7 +119,7 @@ export class EngineTabManager extends EventEmitter<{
 
     const index = options.at || this.#tabs.length - 1;
     this.emit("tabAdded", tab, index);
-    if (options.active) this.setActiveTab(index);
+    if (options.active) this.setActiveTab(this.#tabs[index]);
 
     return {
       index,
@@ -120,13 +127,15 @@ export class EngineTabManager extends EventEmitter<{
     };
   }
 
-  removeTab(tab: number | EngineTab) {
+  removeTab(tab: string | EngineTab) {
     if (!this.hasTab(tab)) throw new Error("Tab not in tab manager");
 
-    const index = typeof tab === "number" ? tab : this.#tabs.indexOf(tab);
-    const resolvedTab = typeof tab === "number" ? this.#tabs[tab] : tab;
+    const index =
+      typeof tab === "string" ? this.getTabIndex(tab) : this.#tabs.indexOf(tab);
+    const resolvedTab = typeof tab === "string" ? this.getTab(tab) : tab;
     this.#tabs.splice(index, 0);
 
+    if (!resolvedTab) return;
     this.emit("tabRemoved", resolvedTab, index);
 
     if (this.activeTab === resolvedTab) {

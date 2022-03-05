@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import {
   BrowserView,
   BrowserViewConstructorOptions,
@@ -10,6 +11,7 @@ export interface EngineTabOptions extends BrowserViewConstructorOptions {
 }
 
 export class EngineTab {
+  #id = randomUUID();
   #browserView: BrowserView;
   #backgroundColor: string;
 
@@ -26,6 +28,10 @@ export class EngineTab {
     this.#browserView.webContents.on("did-finish-load", () =>
       this.#browserView.setBounds(options.bounds)
     );
+  }
+
+  public get id() {
+    return this.#id;
   }
 
   public set backgroundColor(color: string) {
