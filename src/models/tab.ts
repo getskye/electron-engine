@@ -4,18 +4,33 @@ import {
   BrowserViewConstructorOptions,
   Rectangle,
 } from "electron";
+import { EventEmitter } from "tsee";
 
 export interface EngineTabOptions extends BrowserViewConstructorOptions {
   backgroundColor: string;
   bounds: Rectangle;
 }
 
-export class EngineTab {
+export class EngineTab extends EventEmitter<{
+  titleChanged: (title: string | undefined) => void;
+  themeColorChange: (color: string | undefined) => void;
+  finishLoad: () => void;
+}> {
   #id = randomUUID();
+  #title?: string;
+  #color?: string;
   #browserView: BrowserView;
   #backgroundColor: string;
+  #finishLoadHandler: () => void;
+  #didStartNavigationHandler: () => void;
+  #pageTitleUpdatedHandler: (event: Electron.Event, title: string) => void;
+  #didChangeThemeColorHandler: (
+    event: Electron.Event,
+    color: string | null
+  ) => void;
 
   constructor(options: EngineTabOptions) {
+    super();
     this.#backgroundColor = options.backgroundColor;
     this.#browserView = new BrowserView(options);
     this.#browserView.setBackgroundColor(this.#backgroundColor);
@@ -25,13 +40,84 @@ export class EngineTab {
       horizontal: false,
       vertical: false,
     });
-    this.#browserView.webContents.on("did-finish-load", () =>
+
+    this.#browserView.webContents.once("did-finish-load", () =>
       this.#browserView.setBounds(options.bounds)
+    );
+
+    this.#didStartNavigationHandler = () => {
+      this.#title = undefined;
+      this.#color = undefined;
+
+      this.emit("titleChanged", undefined);
+      this.emit("themeColorChange", undefined);
+    };
+
+    this.#finishLoadHandler = () => {
+      this.emit("finishLoad");
+    };
+
+    this.#pageTitleUpdatedHandler = (_, title) => {
+      this.#title = title;
+      this.emit("titleChanged", title);
+    };
+
+    this.#didChangeThemeColorHandler = (_, color) => {
+      this.#color = color ?? undefined;
+      this.emit("themeColorChange", color ?? undefined);
+    };
+
+    this.#browserView.webContents.on(
+      "did-finish-load",
+      this.#finishLoadHandler
+    );
+    this.#browserView.webContents.on(
+      "page-title-updated",
+      this.#pageTitleUpdatedHandler
+    );
+    this.#browserView.webContents.on(
+      "did-change-theme-color",
+      this.#didChangeThemeColorHandler
+    );
+    this.#browserView.webContents.on(
+      "did-start-navigation",
+      this.#didStartNavigationHandler
+    );
+
+    // this.#browserView.webContents.on("page-favicon-updated", (_, favicons) => {
+    //   // TODO: handle favicons
+    // });
+  }
+
+  public destroy() {
+    this.#browserView.webContents.off(
+      "did-finish-load",
+      this.#finishLoadHandler
+    );
+    this.#browserView.webContents.off(
+      "page-title-updated",
+      this.#pageTitleUpdatedHandler
+    );
+    this.#browserView.webContents.off(
+      "did-change-theme-color",
+      this.#didChangeThemeColorHandler
+    );
+    this.#browserView.webContents.off(
+      "did-start-navigation",
+      this.#didStartNavigationHandler
     );
   }
 
   public get id() {
     return this.#id;
+  }
+
+  public get title() {
+    return this.#title;
+  }
+
+  public get color() {
+    return this.#color;
   }
 
   public set backgroundColor(color: string) {

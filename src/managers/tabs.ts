@@ -68,6 +68,10 @@ export class EngineTabManager extends EventEmitter<{
     return this.#tabs.length;
   }
 
+  get tabs() {
+    return this.#tabs;
+  }
+
   setActiveTab(tab: string | EngineTab) {
     if (!this.hasTab(tab)) throw new Error("Tab not in tab manager");
     const newActiveTab = typeof tab === "string" ? this.getTab(tab) : tab;
@@ -127,7 +131,7 @@ export class EngineTabManager extends EventEmitter<{
     };
   }
 
-  removeTab(tab: string | EngineTab) {
+  deleteTab(tab: string | EngineTab) {
     if (!this.hasTab(tab)) throw new Error("Tab not in tab manager");
 
     const index =
@@ -136,6 +140,7 @@ export class EngineTabManager extends EventEmitter<{
     this.#tabs.splice(index, 0);
 
     if (!resolvedTab) return;
+    resolvedTab.destroy();
     this.emit("tabRemoved", resolvedTab, index);
 
     if (this.activeTab === resolvedTab) {
@@ -151,5 +156,3 @@ export class EngineTabManager extends EventEmitter<{
     // NOTE: I don't see a way to manually destroy the webcontents, maybe it's destroyed on GC?
   }
 }
-
-// const owo: EngineTabManager = new EngineTabManager({ window: 1 as any });
