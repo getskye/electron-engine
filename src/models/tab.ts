@@ -15,10 +15,13 @@ export class EngineTab extends EventEmitter<{
   titleChanged: (title: string | undefined) => void;
   themeColorChange: (color: string | undefined) => void;
   finishLoad: () => void;
+  loadStart: () => void;
+  loadStop: () => void;
 }> {
-  #id = randomUUID();
+  #id: string = randomUUID();
   #title?: string;
   #color?: string;
+  #loading: boolean = true;
   #browserView: BrowserView;
   #backgroundColor: string;
   #finishLoadHandler: () => void;
@@ -28,6 +31,8 @@ export class EngineTab extends EventEmitter<{
     event: Electron.Event,
     color: string | null
   ) => void;
+  #loadStartHandler: () => void;
+  #loadStopHandler: () => void;
 
   constructor(options: EngineTabOptions) {
     super();
@@ -67,6 +72,16 @@ export class EngineTab extends EventEmitter<{
       this.emit("themeColorChange", color ?? undefined);
     };
 
+    this.#loadStartHandler = () => {
+      this.#loading = true;
+      this.emit("loadStart");
+    };
+
+    this.#loadStopHandler = () => {
+      this.#loading = false;
+      this.emit("loadStop");
+    };
+
     this.#browserView.webContents.on(
       "did-finish-load",
       this.#finishLoadHandler
@@ -82,6 +97,14 @@ export class EngineTab extends EventEmitter<{
     this.#browserView.webContents.on(
       "did-start-navigation",
       this.#didStartNavigationHandler
+    );
+    this.#browserView.webContents.on(
+      "did-start-loading",
+      this.#loadStartHandler
+    );
+    this.#browserView.webContents.on(
+      "did-stop-loading",
+      () => this.#loadStopHandler
     );
 
     // this.#browserView.webContents.on("page-favicon-updated", (_, favicons) => {
@@ -105,6 +128,14 @@ export class EngineTab extends EventEmitter<{
     this.#browserView.webContents.off(
       "did-start-navigation",
       this.#didStartNavigationHandler
+    );
+    this.#browserView.webContents.off(
+      "did-start-loading",
+      this.#loadStartHandler
+    );
+    this.#browserView.webContents.off(
+      "did-stop-loading",
+      this.#loadStopHandler
     );
   }
 
