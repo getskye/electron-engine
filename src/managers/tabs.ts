@@ -79,6 +79,9 @@ export class EngineTabManager extends EventEmitter<{
     if (!newActiveTab) throw new Error("Tab not in tab manager");
 
     this.#window.browserWindow.setBrowserView(newActiveTab.browserView);
+    newActiveTab.browserView.setBounds(
+      this.calculateBounds(this.#window.offset)
+    );
     newActiveTab.browserView.webContents.focus();
 
     this.emit(
