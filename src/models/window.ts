@@ -86,7 +86,9 @@ export class EngineWindow extends EventEmitter<{
     if (!resolvedOverlay) return;
 
     resolvedOverlay.destroy();
+    this.#browserWindow.removeBrowserView(resolvedOverlay.browserView);
     this.#overlays.delete(resolvedOverlay);
+
     this.emit("overlayRemoved", resolvedOverlay);
   }
 
@@ -103,6 +105,8 @@ export class EngineWindow extends EventEmitter<{
     if ("file" in options.ui)
       overlay.browserView.webContents.loadFile(options.ui.file);
     else overlay.browserView.webContents.loadURL(options.ui.url);
+
+    this.#browserWindow.addBrowserView(overlay.browserView);
 
     this.emit("overlayAdded", overlay);
     if (options.top) this.setTopOverlay(overlay);
