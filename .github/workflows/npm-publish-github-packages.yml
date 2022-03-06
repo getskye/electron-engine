@@ -23,6 +23,6 @@ jobs:
         with:
           version: "6.x"
           run_install: true
-      - run: pnpm publish
+      - run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
