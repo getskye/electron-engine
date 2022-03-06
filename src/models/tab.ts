@@ -91,10 +91,7 @@ export class EngineTab extends EventEmitter<{
       "did-start-loading",
       this.#loadStartHandler
     );
-    this.#browserView.webContents.on(
-      "did-stop-loading",
-      () => this.#loadStopHandler
-    );
+    this.#browserView.webContents.on("did-stop-loading", this.#loadStopHandler);
 
     // this.#browserView.webContents.on("page-favicon-updated", (_, favicons) => {
     //   // TODO: handle favicons
