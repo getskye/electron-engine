@@ -1,4 +1,4 @@
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, WebContents } from "electron";
 import { EventEmitter } from "tsee";
 import { EngineWindow, EngineWindowOptions } from "../models/window";
 
@@ -68,6 +68,16 @@ export class EngineWindowManager extends EventEmitter<{
     handler: ((e: Electron.Event, window: EngineWindow) => void) | null
   ) {
     this.#windowCloseHandler = handler;
+  }
+
+  fromWebContents(contents: WebContents) {
+    return this.windows.find(
+      (w) => w.browserWindow.id === BrowserWindow.fromWebContents(contents)?.id
+    );
+  }
+
+  getWindow(id: number) {
+    return this.windows.find((w) => w.browserWindow.id === id);
   }
 
   get windows() {
