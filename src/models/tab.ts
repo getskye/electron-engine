@@ -17,6 +17,10 @@ export class EngineTab extends EventEmitter<{
   finishLoad: () => void;
   loadStart: () => void;
   loadStop: () => void;
+  navigationStateChanged: (state: {
+    canNavigateBack: boolean;
+    canNavigateForward: boolean;
+  }) => void;
 }> {
   #id: string = randomUUID();
   #title?: string;
@@ -32,6 +36,7 @@ export class EngineTab extends EventEmitter<{
   ) => void;
   #loadStartHandler: () => void;
   #loadStopHandler: () => void;
+  #navigationStartHandler: () => void;
 
   constructor(options: EngineTabOptions) {
     super();
@@ -67,12 +72,19 @@ export class EngineTab extends EventEmitter<{
 
     this.#loadStartHandler = () => {
       this.#loading = true;
+      this.updateNavigationState();
       this.emit("loadStart");
     };
 
     this.#loadStopHandler = () => {
       this.#loading = false;
+      this.updateNavigationState();
+
       this.emit("loadStop");
+    };
+
+    this.#navigationStartHandler = () => {
+      this.updateNavigationState();
     };
 
     this.#browserView.webContents.on(
@@ -92,6 +104,11 @@ export class EngineTab extends EventEmitter<{
       this.#loadStartHandler
     );
     this.#browserView.webContents.on("did-stop-loading", this.#loadStopHandler);
+
+    this.#browserView.webContents.on(
+      "did-start-navigation",
+      this.#navigationStartHandler
+    );
 
     // this.#browserView.webContents.on("page-favicon-updated", (_, favicons) => {
     //   // TODO: handle favicons
@@ -118,6 +135,10 @@ export class EngineTab extends EventEmitter<{
     this.#browserView.webContents.off(
       "did-stop-loading",
       this.#loadStopHandler
+    );
+    this.#browserView.webContents.off(
+      "did-start-navigation",
+      this.#navigationStartHandler
     );
   }
 
@@ -148,5 +169,28 @@ export class EngineTab extends EventEmitter<{
 
   public get browserView() {
     return this.#browserView;
+  }
+
+  reload() {
+    this.#browserView.webContents.reload();
+  }
+
+  cancelNavigation() {
+    this.#browserView.webContents.stop();
+  }
+
+  private updateNavigationState() {
+    this.emit("navigationStateChanged", {
+      canNavigateBack: this.canNavigateBack,
+      canNavigateForward: this.canNavigateForward,
+    });
+  }
+
+  public get canNavigateBack() {
+    return this.#browserView.webContents.canGoBack();
+  }
+
+  public get canNavigateForward() {
+    return this.#browserView.webContents.canGoForward();
   }
 }
