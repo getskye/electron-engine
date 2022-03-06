@@ -29,7 +29,10 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-      - run: pnpm ci
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: "6.x"
+          run_install: true
       - run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
