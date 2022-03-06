@@ -18,7 +18,7 @@ export class EngineTab extends EventEmitter<{
   loadStart: () => void;
   loadStop: () => void;
   navigationStateChanged: (state: {
-    canNavigateBack: boolean;
+    canNavigateBackward: boolean;
     canNavigateForward: boolean;
   }) => void;
 }> {
@@ -181,16 +181,24 @@ export class EngineTab extends EventEmitter<{
 
   private updateNavigationState() {
     this.emit("navigationStateChanged", {
-      canNavigateBack: this.canNavigateBack,
+      canNavigateBackward: this.canNavigateBackward,
       canNavigateForward: this.canNavigateForward,
     });
   }
 
-  public get canNavigateBack() {
+  public get canNavigateBackward() {
     return this.#browserView.webContents.canGoBack();
   }
 
   public get canNavigateForward() {
     return this.#browserView.webContents.canGoForward();
+  }
+
+  public navigateBackward() {
+    return this.#browserView.webContents.goBack();
+  }
+
+  public navigateForward() {
+    return this.#browserView.webContents.goForward();
   }
 }
