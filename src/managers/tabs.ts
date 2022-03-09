@@ -144,7 +144,7 @@ export class EngineTabManager extends EventEmitter<{
     const index =
       typeof tab === "string" ? this.getTabIndex(tab) : this.#tabs.indexOf(tab);
     const resolvedTab = typeof tab === "string" ? this.getTab(tab) : tab;
-    this.#tabs.splice(index, 0);
+    this.#tabs.splice(index, 1);
 
     if (!resolvedTab) return;
     resolvedTab.destroy();
