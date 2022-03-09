@@ -145,12 +145,7 @@ export class EngineTabManager extends EventEmitter<{
 
     const index =
       typeof tab === "string" ? this.getTabIndex(tab) : this.#tabs.indexOf(tab);
-    const resolvedTab = typeof tab === "string" ? this.getTab(tab) : tab;
-    this.#tabs.splice(index, 1);
-
-    if (!resolvedTab) return;
-    resolvedTab.destroy();
-    this.emit("tabRemoved", resolvedTab, index);
+    const resolvedTab = typeof tab === "string" ? this.getTab(tab)! : tab;
 
     if (this.activeTab === resolvedTab) {
       const nextActiveTab = this.#tabs[index - 1] || this.#tabs[index + 1];
@@ -161,6 +156,10 @@ export class EngineTabManager extends EventEmitter<{
 
       this.setActiveTab(nextActiveTab);
     }
+
+    this.#tabs.splice(index, 1);
+    resolvedTab.destroy();
+    this.emit("tabRemoved", resolvedTab, index);
 
     // NOTE: I don't see a way to manually destroy the webcontents, maybe it's destroyed on GC?
   }
