@@ -62,6 +62,7 @@ export class EngineWindow extends EventEmitter<{
 
   set offset(offset: Offset) {
     this.#offset = offset;
+    this.emit("offsetChanged", offset);
   }
 
   get overlays() {
