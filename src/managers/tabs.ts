@@ -109,7 +109,7 @@ export class EngineTabManager extends EventEmitter<{
   }
 
   createTab(
-    options: Omit<EngineTabOptions, "bounds"> & {
+    options: Omit<EngineTabOptions, "bounds" | "tabManager"> & {
       at?: number;
       active: boolean;
       webpage: { file: string } | { url: string };
