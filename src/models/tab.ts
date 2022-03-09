@@ -25,6 +25,7 @@ export class EngineTab extends EventEmitter<{
   #id: string = randomUUID();
   #title?: string;
   #color?: string;
+  #url: string = "about:empty";
   #loading: boolean = true;
   #browserView: BrowserView;
   #backgroundColor: string;
@@ -152,6 +153,19 @@ export class EngineTab extends EventEmitter<{
 
   public get color() {
     return this.#color;
+  }
+
+  public get url() {
+    return this.#url;
+  }
+
+  public get loading() {
+    return this.#loading;
+  }
+
+  public set url(url: string) {
+    this.#url = url;
+    this.#browserView.webContents.loadURL(url);
   }
 
   public set backgroundColor(color: string) {
