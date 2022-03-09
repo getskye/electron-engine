@@ -149,12 +149,9 @@ export class EngineTabManager extends EventEmitter<{
 
     if (this.activeTab === resolvedTab) {
       const nextActiveTab = this.#tabs[index - 1] || this.#tabs[index + 1];
-      if (!nextActiveTab) {
+      if (!nextActiveTab)
         this.#window.browserWindow.removeBrowserView(resolvedTab.browserView);
-        this.#window.close();
-      }
-
-      this.setActiveTab(nextActiveTab);
+      else this.setActiveTab(nextActiveTab);
     }
 
     this.#tabs.splice(index, 1);
