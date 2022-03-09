@@ -24,7 +24,7 @@ export class EngineTabManager extends EventEmitter<{
     this.#window.on("offsetChanged", this.#changeOffsetHandler);
   }
 
-  private calculateBounds(offset: Offset) {
+  calculateBounds(offset: Offset) {
     const bounds = this.#window.browserWindow.getBounds();
     return {
       x: offset.left,
@@ -93,6 +93,10 @@ export class EngineTabManager extends EventEmitter<{
     );
   }
 
+  get window() {
+    return this.#window;
+  }
+
   get activeTab() {
     const activeViews = this.#window.browserWindow.getBrowserViews();
     if (activeViews.length === 0) return;
@@ -111,11 +115,9 @@ export class EngineTabManager extends EventEmitter<{
       webpage: { file: string } | { url: string };
     }
   ) {
-    const offset = this.#window.offset;
-    const bounds = this.calculateBounds(offset);
     const tab = new EngineTab({
       ...options,
-      bounds,
+      tabManager: this,
     });
 
     if ("file" in options.webpage)

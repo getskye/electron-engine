@@ -5,10 +5,11 @@ import {
   Rectangle,
 } from "electron";
 import { EventEmitter } from "tsee";
+import { EngineTabManager } from "../managers/tabs";
 
 export interface EngineTabOptions extends BrowserViewConstructorOptions {
   backgroundColor: string;
-  bounds: Rectangle;
+  tabManager: EngineTabManager;
 }
 
 export class EngineTab extends EventEmitter<{
@@ -52,7 +53,9 @@ export class EngineTab extends EventEmitter<{
     });
 
     this.#browserView.webContents.once("did-finish-load", () =>
-      this.#browserView.setBounds(options.bounds)
+      this.#browserView.setBounds(
+        options.tabManager.calculateBounds(options.tabManager.window.offset)
+      )
     );
 
     this.#finishLoadHandler = () => {
