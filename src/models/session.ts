@@ -2,7 +2,7 @@ import { FromPartitionOptions, Session, session } from "electron";
 
 export type EngineSessionOptions = FromPartitionOptions & {
   id: string;
-  persist: true;
+  persist: boolean;
   storageProvider: StorageProvider;
 };
 
