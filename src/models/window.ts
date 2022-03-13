@@ -2,6 +2,7 @@ import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import { EventEmitter } from "tsee";
 import { EngineTabManager } from "../managers/tabs";
 import { EngineOverlay, EngineOverlayOptions } from "./overlay";
+import { EngineSession } from "./session";
 
 export type Offset = {
   top: number;
@@ -14,6 +15,7 @@ export type EngineWindowOptions = BrowserWindowConstructorOptions & {
   offset: Offset;
   ui: { file: string } | { url: string };
   waitForLoad: true;
+  session: EngineSession;
 };
 
 export class EngineWindow extends EventEmitter<{
@@ -26,12 +28,14 @@ export class EngineWindow extends EventEmitter<{
   #browserWindow: BrowserWindow;
   #tabManager: EngineTabManager;
   #overlays = new Set<EngineOverlay>();
+  #session: EngineSession;
 
   constructor(options: EngineWindowOptions) {
     super();
     this.#browserWindow = new BrowserWindow({ ...options, show: false });
     this.#offset = options.offset;
     this.#tabManager = new EngineTabManager({ window: this });
+    this.#session = options.session;
 
     if ("file" in options.ui) this.#browserWindow.loadFile(options.ui.file);
     else this.#browserWindow.loadURL(options.ui.url);
@@ -46,6 +50,10 @@ export class EngineWindow extends EventEmitter<{
   close() {
     this.#tabManager.close();
     this.#browserWindow.close();
+  }
+
+  get session() {
+    return this.#session;
   }
 
   get tabManager() {

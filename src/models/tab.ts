@@ -43,7 +43,13 @@ export class EngineTab extends EventEmitter<{
   constructor(options: EngineTabOptions) {
     super();
     this.#backgroundColor = options.backgroundColor;
-    this.#browserView = new BrowserView(options);
+    this.#browserView = new BrowserView({
+      ...options,
+      webPreferences: {
+        ...options.webPreferences,
+        session: options.tabManager.window.session.session,
+      },
+    });
     this.#browserView.setBackgroundColor(this.#backgroundColor);
     this.#browserView.setAutoResize({
       width: true,
