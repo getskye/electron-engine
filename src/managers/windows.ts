@@ -8,10 +8,6 @@ export class EngineWindowManager extends EventEmitter<{
   windowFocused: (window: EngineWindow) => void;
 }> {
   #windows = new Set<EngineWindow>([]);
-  #windowCloseHandler:
-    | null
-    | ((e: Electron.Event, window: EngineWindow) => void) = null;
-  #windowCloseHandlerMap: Record<string, (event: Electron.Event) => void> = {};
   #focusHandler: () => void;
 
   private handleWindowFocus = (
@@ -32,7 +28,6 @@ export class EngineWindowManager extends EventEmitter<{
   close() {
     app.off("browser-window-focus", this.#focusHandler);
     this.#windows.forEach((w) => {
-      delete this.#windowCloseHandlerMap[w.browserWindow.id];
       w.close();
     });
   }
@@ -41,13 +36,10 @@ export class EngineWindowManager extends EventEmitter<{
     const window = new EngineWindow(options);
     this.#windows.add(window);
 
-    const handler = (event: Electron.Event) => {
-      if (this.#windowCloseHandler) this.#windowCloseHandler(event, window);
-      if (!event.defaultPrevented) this.destroyWindow(window);
-    };
-    this.#windowCloseHandlerMap[window.browserWindow.id] = handler;
-
-    window.browserWindow.on("close", handler);
+    window.browserWindow.on("closed", () => {
+      this.#windows.delete(window);
+      this.emit("windowRemoved", window);
+    });
 
     this.emit("windowAdded", window);
 
@@ -57,17 +49,10 @@ export class EngineWindowManager extends EventEmitter<{
   destroyWindow(window: EngineWindow) {
     if (!this.#windows.has(window)) throw new Error("Window not managed");
     this.#windows.delete(window);
-    delete this.#windowCloseHandlerMap[window.browserWindow.id];
 
     window.close();
 
     this.emit("windowRemoved", window);
-  }
-
-  setWindowCloseHandler(
-    handler: ((e: Electron.Event, window: EngineWindow) => void) | null
-  ) {
-    this.#windowCloseHandler = handler;
   }
 
   fromWebContents(contents: WebContents) {
