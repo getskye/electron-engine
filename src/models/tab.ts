@@ -21,6 +21,7 @@ export class EngineTab extends EventEmitter<{
   navigationStateChanged: (state: {
     canNavigateBackward: boolean;
     canNavigateForward: boolean;
+    url: string;
   }) => void;
 }> {
   #id: string = randomUUID();
@@ -203,9 +204,11 @@ export class EngineTab extends EventEmitter<{
   }
 
   private updateNavigationState() {
+    this.#url = this.#browserView.webContents.getURL();
     this.emit("navigationStateChanged", {
       canNavigateBackward: this.canNavigateBackward,
       canNavigateForward: this.canNavigateForward,
+      url: this.#url,
     });
   }
 
