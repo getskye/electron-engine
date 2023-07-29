@@ -4,8 +4,9 @@
 name: Publish @getskye/engine to GitHub Packages
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
 
 jobs:
   publish-gpr:
