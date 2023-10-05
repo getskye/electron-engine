@@ -19,12 +19,12 @@
   "homepage": "https://github.com/getskye/engine#readme",
   "devDependencies": {
     "@types/node": "^20.4.5",
-    "electron": "^25.3.2",
+    "electron": "^25.8.4",
     "prettier": "^3.0.0",
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
-    "electron": "^25.3.2"
+    "electron": "^25.8.4"
   },
   "dependencies": {
     "tsee": "^1.3.4"
